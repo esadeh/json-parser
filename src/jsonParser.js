@@ -5,43 +5,66 @@ function JsonParser(){
 
 }
 var pairSeparator = ':';
-//JsonParser.prototype.spaces = '\s*';
-//JsonParser.prototype.wildCard = '[^$]*';
 var comma = ",";
 
 function removeCurlyBraces(json) {
     return json.slice(json.indexOf('{') + 1, json.indexOf('}'));
 }
 
-function removeQuotationMarks(json) {
+function removeAllQuotationMarks(json) {
     return json.replace(/"/g, "");;
 }
+
+function splitByPairSeparator (pair){
+    var splittedPair = pair.split(pairSeparator);
+    splittedPair[0] = splittedPair[0].trim();
+    splittedPair[1] = splittedPair[1].trim();
+    return splittedPair;
+}
+
+function IsNumeric(input){
+    return (input - 0) == input && (''+input).replace(/^\s+|\s+$/g, "").length > 0;
+}
+
+function isBoolean(input){
+    return input == 'false' || input == 'true';
+
+}
+
+function getValueByType(val) {
+    if (IsNumeric(val))
+        return Number(val);
+    if (isBoolean(val)){
+        return val =='true';
+    }
+    return removeAllQuotationMarks(val);
+}
+
+function splitJsonToPairs(json){
+    var pairsStr = json.split(comma);
+    return pairsStr.map(splitByPairSeparator);
+}
+
+
 
 JsonParser.prototype.parse = function (json) {
 
     var obj = {};
-//    if (!json.match(this.spaces+'{'+this.wildCard+'}'+this.spaces)){
-//        return undefined;
-//    }
-
 
     json = removeCurlyBraces(json).trim();
-    if (json.length > 0) {
-        var arr = json.split(comma);
-        arr = arr.map(function(pair){
-            return pair.split(pairSeparator)});
-
-        arr.forEach(function(pair){
-            var name = pair[0].trim();
-           // name.slice(1,name.length-1);
-            var val = pair[1].trim();
-            obj[removeQuotationMarks(name)] = Number(val);
-        });
-
-//        arr = arr.map(function (str) {
-//            return str.trim();
-//        });
-//        obj[arr[0]] = Number(arr[1]);
+    if (json.length == 0) {
+        return obj;
     }
+
+    var pairsArr = splitJsonToPairs(json);
+
+    pairsArr.forEach(function(pair){
+        var key = removeAllQuotationMarks(pair[0]);
+        var val = getValueByType(pair[1]);
+        obj[key] = val;
+    });
+
+
+
     return obj;
 }

@@ -21,6 +21,22 @@ describe("json parser", function() {
         expect(parser.parse('{  "a"   :   4   }')).toEqual({ a : 4});
     });
 
+    it("should parse numbers as strings", function () {
+        expect(parser.parse('{  "a"   :   "4"   }')).toEqual({ a : '4'});
+    });
+
+    it("should parse object with spaces", function () {
+        expect(parser.parse('{  "a"   :   "abc"   }')).toEqual({ a : 'abc'});
+    });
+
+    it("should parse boolean values", function () {
+        expect(parser.parse('{  "a"   :   true   }')).toEqual({ a : true });
+    });
+
+    it("should parse boolean as string", function () {
+        expect(parser.parse('{  "a"   :   "true""   }')).toEqual({ a : 'true' });
+    });
+
     it("should parse object with 2 fields", function () {
         expect(parser.parse('{ "a" : 4, "b" : 3 }')).toEqual({ a : 4, b : 3});
     });
