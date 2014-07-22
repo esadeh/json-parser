@@ -13,12 +13,16 @@ describe("json parser", function() {
         expect(parser.parse('{}')).toEqual({});
     });
 
-    it("should generate empty json object for {}", function () {
-        expect(parser.parse('{ a : 3 }')).toEqual({ a : 3});
+    it("should parse object with one field", function () {
+        expect(parser.parse('{ "a": 3}')).toEqual({ a : 3});
     });
 
-    it("should generate empty json object for {}", function () {
-        expect(parser.parse('{  a   :   4   }')).toEqual({ a : 4});
+    it("should parse object with spaces", function () {
+        expect(parser.parse('{  "a"   :   4   }')).toEqual({ a : 4});
+    });
+
+    it("should parse object with 2 fields", function () {
+        expect(parser.parse('{ "a" : 4, "b" : 3 }')).toEqual({ a : 4, b : 3});
     });
 
 });
