@@ -1,7 +1,7 @@
 /**
  * Created by Eyal_Sadeh on 7/20/14.
  */
-describe("Stack", function() {
+xdescribe("Stack", function() {
     var stack;
     var capacity = 5;
     beforeEach(function () {
