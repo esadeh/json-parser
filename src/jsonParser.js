@@ -1,114 +1,128 @@
 /**
  * Created by Eyal_Sadeh on 7/22/14.
  */
-function JsonParser(){
 
-}
-var pairSeparator = ':';
-var comma = ",";
+(function (w) {
+    function JsonParser() {
 
-function isBool(input){
-    return input == 'false' || input == 'true';
+    }
+    var PAIR_SEPERATOR = ':';
+    var STATEMENT_SEPERATOR = ",";
 
-}
+    function isBool(input) {
+        return input == 'false' || input == 'true';
 
-function isNumeric(val) {
-    return !isNaN(val);
-}
+    }
 
-function isArr(val) {
-    return val.charAt(0) == '[';
-}
+    function isNumeric(val) {
+        return !isNaN(val);
+    }
 
-function isObj(val) {
-    return val.charAt(0) == '{';
-}
+    function isArr(val) {
+        return val.charAt(0) == '[';
+    }
 
-function isValidPair(pair){
-        return pair.split('{').length == pair.split('}').length && pair.split('[').length == pair.split(']').length;
-}
+    function isObj(val) {
+        return val.charAt(0) == '{';
+    }
 
-function removeCurlyBraces(json) {
-    return json.slice(json.indexOf('{') + 1, json.lastIndexOf('}'));
-}
+    function isNul(val) {
+        return val == 'null';
+    }
 
-function removeBrackets(json) {
-    return json.slice(json.indexOf('[') + 1, json.lastIndexOf(']'));
-}
+    function isValidStatement(statement) {
+        return statement.split('{').length == statement.split('}').length &&
+            statement.split('[').length == statement.split(']').length;
+    }
 
-function removeAllQuotationMarks(json) {
-    return json.replace(/"/g, '');;
-}
+    function removeCurlyBraces(json) {
+        return json.slice(json.indexOf('{') + 1, json.lastIndexOf('}'));
+    }
 
-function splitByPairSeparator (pair){
-    var splittedPairIndex = pair.indexOf(pairSeparator);
-    var splittedPair = [];
-    splittedPair[0] = pair.slice(0,splittedPairIndex-1).trim();
-    splittedPair[1] = pair.slice(splittedPairIndex+1).trim();
-    return splittedPair;
-}
+    function removeBrackets(json) {
+        return json.slice(json.indexOf('[') + 1, json.lastIndexOf(']'));
+    }
 
-function splitToValidStatement(json){
-    var splittedByCommaArray = json.split(comma);
-    var validStatement = [];
-    var tempStatement;
-    for (var i = 0; i<splittedByCommaArray.length; i++){
-        tempStatement = splittedByCommaArray[i];
-        while (!isValidPair(tempStatement)){
-            i++;
-            tempStatement+=','+splittedByCommaArray[i];
+    function parseKey(json) {
+        return json.replace(/"/g, '');
+        ;
+    }
+
+    function splitByPairSeparator(pair) {
+        var splittedPairIndex = pair.indexOf(PAIR_SEPERATOR);
+        return {
+            key: pair.slice(0, splittedPairIndex - 1).trim(),
+            value: pair.slice(splittedPairIndex + 1).trim()
+        };
+    }
+
+    function splitToValidStatement(json) {
+        if (json.length == 0) {
+            return [];
         }
-        validStatement.push(tempStatement.trim());
+        var splittedByCommaArray = json.split(STATEMENT_SEPERATOR);
+        var validStatements = [];
+        var tempStatement;
+        for (var i = 0; i < splittedByCommaArray.length; i++) {
+            tempStatement = splittedByCommaArray[i];
+            while (!isValidStatement(tempStatement)) {
+                i++;
+                tempStatement += ',' + splittedByCommaArray[i];
+            }
+            validStatements.push(tempStatement.trim());
+        }
+        return validStatements;
     }
-    return validStatement;
-}
 
-function splitJsonToPairs(json){
-    var pairsArray = splitToValidStatement(json);
-    return pairsArray.map(splitByPairSeparator);
-}
-
-
-function strToArr(val){
-    val = removeBrackets(val).trim();
-    if (val.length == 0){
-        return [];
+    function splitJsonToPairs(json) {
+        var pairsArray = splitToValidStatement(json);
+        return pairsArray.map(splitByPairSeparator);
     }
-    var splitedByCommasArr = splitToValidStatement(val);
-    var parsedArr = splitedByCommasArr.map(getValueByType);
-    return parsedArr;
-}
 
-function getValueByType(val) {
-    if(isNumeric(val))
-        return Number(val);
-    if(isBool(val)){
-        return val =='true';
+
+    function strToArr(val) {
+        val = removeBrackets(val).trim();
+        if (val.length == 0) {
+            return [];
+        }
+        var splitedByCommasArr = splitToValidStatement(val);
+        var parsedArr = splitedByCommasArr.map(parseValue);
+        return parsedArr;
     }
-    if(isArr(val)){
-        return strToArr(val);
+
+    function parseValue(valAsString) {
+        if (isNumeric(valAsString))
+            return Number(valAsString);
+        if (isBool(valAsString)) {
+            return valAsString == 'true';
+        }
+        if (isArr(valAsString)) {
+            return strToArr(valAsString);
+        }
+        if (isObj(valAsString)) {
+            var parser = new JsonParser();
+            return parser.parse(valAsString);
+        }
+        if (isNul(valAsString))
+            return null;
+        return parseKey(valAsString);
     }
-    if(isObj(val)){
-        var parser = new JsonParser();
-        return parser.parse(val);
-    }
-    return removeAllQuotationMarks(val);
-}
 
 
+    JsonParser.prototype.parse = function (json) {
+        if (!isValidStatement(json)) {
+            throw('statement is not valid');
+        }
+        var obj = {};
+        json = removeCurlyBraces(json).trim();
 
-JsonParser.prototype.parse = function (json) {
-    var obj = {};
-    json = removeCurlyBraces(json).trim();
-    if (json.length == 0) {
+
+        var pairsArr = splitJsonToPairs(json);
+        pairsArr.forEach(function (pair) {
+            obj[parseKey(pair.key)] = parseValue(pair.value);
+        });
         return obj;
     }
 
-    var pairsArr = splitJsonToPairs(json);
-    pairsArr.forEach(function (pair) {
-        var key = removeAllQuotationMarks(pair[0]);
-        var val = getValueByType(pair[1]);
-        obj[key] = val;
-    });
-    return obj;
-}
+    w.JsonParser = JsonParser;
+}(window));
