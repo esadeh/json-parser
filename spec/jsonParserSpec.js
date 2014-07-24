@@ -69,6 +69,73 @@ describe("json parser", function() {
 
 });
 
+describe("json to string", function() {
+    var parser;
+    beforeEach(function () {
+        parser = new JsonParser();
+
+    });
+
+    it("should generate '{} for empty json object", function () {
+        expect(remove_spaces(parser.toStr({}))).toEqual(remove_spaces('{}'));
+    });
+
+    it("should parse object with one field", function () {
+        expect(remove_spaces(parser.toStr({ a : 3}))).toEqual(remove_spaces('{ "a": 3}'));
+    });
+
+    it("should parse any object with one field", function () {
+        expect(remove_spaces(parser.toStr({ b : 5}))).toEqual(remove_spaces('{ "b": 5}'));
+    });
+
+    it("should parse object with two field", function () {
+        expect(remove_spaces(parser.toStr({ b : 5, c: 6}))).toEqual(remove_spaces('{ "b": 5, "c":6}'));
+    });
+
+    it("should parse object with string field", function () {
+        expect(remove_spaces(parser.toStr({ a : 'abc'}))).toEqual(remove_spaces('{ "a": "abc"}'));
+    });
+
+    it("should parse object with boolean field", function () {
+        expect(remove_spaces(parser.toStr({ a : true}))).toEqual(remove_spaces('{ "a": true}'));
+    });
+
+    it("should parse object with array field", function () {
+        expect(remove_spaces(parser.toStr(  { a : [1, 2 ,4]}  ))).toEqual(remove_spaces('{ "a": [1,2,4]}'));
+    });
+
+
+    it("should parse object with array field", function () {
+        expect(remove_spaces(parser.toStr(  { a : {b : 5 , c : 3}}  ))).toEqual(remove_spaces('{ "a": {"b" : 5, "c" : 3}}'));
+    });
+
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 xdescribe('JSON Parser', function () {
     var parser;

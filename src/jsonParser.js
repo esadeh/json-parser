@@ -1,7 +1,9 @@
 /**
  * Created by Eyal_Sadeh on 7/22/14.
  */
-
+function remove_spaces(str){
+    return str.replace(/ /g,'');
+}
 (function (w) {
     function JsonParser() {
 
@@ -45,7 +47,7 @@
 
     function parseKey(json) {
         return json.replace(/"/g, '');
-        ;
+
     }
 
     function splitByPairSeparator(pair) {
@@ -115,14 +117,48 @@
         }
         var obj = {};
         json = removeCurlyBraces(json).trim();
-
-
         var pairsArr = splitJsonToPairs(json);
         pairsArr.forEach(function (pair) {
             obj[parseKey(pair.key)] = parseValue(pair.value);
         });
         return obj;
+    };
+
+    function isStr(value){
+        return typeof value == 'string' || value instanceof String ;
     }
+
+    function mystringifyArray(arr){
+//        var stringifyArr = arr.map(function(value){
+//            return strinifyValue(value);
+//        })
+//        return '[' + stringifyArr.join() +']';
+        return '[' + arr +']';
+    }
+
+    function strinifyValue(value){
+        if (isStr(value))
+            return '"'+value+'"';
+        if (value instanceof Array)
+            return mystringifyArray(value);
+        if (value instanceof Object) {
+            var parser = new JsonParser();
+            return parser.toStr(value);
+        }
+        return value;
+    }
+
+    JsonParser.prototype.toStr = function (object) {
+
+        var keys = Object.keys(object);
+
+        var keyValuePairs = keys.map(function(key){
+            return'"'+key+'":'+strinifyValue(object[key]);
+        });
+
+        return '{' + keyValuePairs.join() + '}';
+
+    };
 
     w.JsonParser = JsonParser;
 }(window));
